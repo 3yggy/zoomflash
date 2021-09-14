@@ -1,3 +1,11 @@
+// ==UserScript==
+// @name        Zoom Flash
+// @match       *://*.zoom.us/wc/*
+// @grant       none
+// @version     3.1.9.1
+// @author      ziggy
+// ==/UserScript==
+
 var Socket;
 var uNodeID=-1;
 WebSocket.prototype.org = WebSocket.prototype.send;
@@ -13,7 +21,6 @@ WebSocket.prototype.send = function(data) {
 function HandleReaction(ws, data){
     Socket=ws;
     uNodeID=data.body.uNodeID;
-    console.log('reactor ready');
 }
 
 function MakeData(emoji){
@@ -31,17 +38,17 @@ window.REACTION_RANDO=function(r)
     rando=r;
 }
 var reacting=-1;
-window.REACTIONS=function(emojiList){
+window.REACTIONS=function(emojiList, stop){
     var idx=0;
-
-    console.log(emojiList);
-
     var id=++reacting;
     var l=emojiList.length;
     var DoReactions=function(){
         if(reacting==id){
-            if(idx>=l)
+            if(idx>=l){
+                if(stop)
+                    return console.log('stopping');
                 idx=0;
+            }
             React(emojiList[idx]);
 
             if(rando)
@@ -67,7 +74,6 @@ function React(emoji, prevent){
     if(Socket&&uNodeID!=-1){
         var data=MakeData(emoji);
         WebSocket.prototype.org.apply(Socket, [data]);
-        console.log(data);
     }else{
         INIT();
         if(!prevent)
